@@ -1,8 +1,5 @@
 import processing as p
-import tfidf as t
-
-import nltk
-nltk.download('wordnet')
+import helpers as h
 
 docs = p.getDocs()
 ques = p.getTest()
@@ -17,10 +14,10 @@ for question, docid, questionID in ques:
 for key in docIDQuestions.keys():
     questions = docIDQuestions[key]
     doc = docs[key]
-    docVecs, queryVecs = t.getVectors(doc, questions)
+    docVecs, queryVecs = h.getVectors(doc, questions)
     for questionID, question in questions:
         queryVec = queryVecs[questionID]
-        bestIndex = t.getBestIndex(docVecs, queryVec)
+        bestIndex = h.getBestIndex(docVecs, queryVec)
         print ("Question: %s" % question)
         #print ("DocId: %s" % docid)
         print ("QuestionID: %s" % questionID)

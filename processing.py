@@ -2,6 +2,7 @@ import nltk
 import string
 import json
 import pandas
+import re
 
 
 #---------------------------------------------JSON processing-----------------------------------------------------------
@@ -30,8 +31,8 @@ def getDocs():
         docData[docid] = text
     return docData
 
-docData = getDocs()
-print(docData[0])
+#docData = getDocs()
+#print(docData[0])
 
 def getTest():
     questions = []
@@ -62,9 +63,6 @@ def getTraining():
 #set of stopwords
 stopwords = set(nltk.corpus.stopwords.words('english'))
 
-#set of punctuation
-punctuation = set(string.punctuation)
-
 stemmer = nltk.stem.PorterStemmer()
 lemmatizer = nltk.stem.wordnet.WordNetLemmatizer()
 
@@ -76,13 +74,27 @@ def lemmatize(word):
     return lemma
 
 
-#Processes a single line i.e. Paragraph, sentence or question
-def processLine(line):
+#Process a question
+def processLineWithLem(line):
     words = []
+    line = regexAscii(line)
     line = nltk.word_tokenize(line)
     for word in line:
-        stemWord = stemmer.stem(lemmatize(word.lower()))
-        if word not in punctuation and word not in stopwords:
+        lemWord = lemmatize(word.lower())
+        if word not in stopwords:
+            words.append(lemWord)
+    return words
+
+
+#Processes a single line i.e. Paragraph, sentence or question by stemming
+def processLineWithStemmer(line):
+    words = []
+    line = regexAscii(line)
+    line = nltk.word_tokenize(line)
+    for word in line:
+        #stemWord = stemmer.stem(lemmatize(word.lower()))
+        stemWord = stemmer.stem(word.lower())
+        if word not in stopwords:
             words.append(stemWord)
     return words
 
@@ -94,6 +106,15 @@ def processDoc(doc):
         processed[i] = processLine(doc[i])
     return processed
 
+
+#Regex to remove non-ascii characters and punctuation
+def regexAscii(str):
+    #str = str.replace("'", '')
+    #str = str.replace('"', '')
+    #compiled = re.compile(u'[^\x00-\x7F]+')
+    #special character \u2013 is left in because it is EN-HYPHEN
+    compiled = re.compile(u'[^a-zA-Z0-9_.-\\u2013]|(?<!\d)\.(?!\d)|(?<!\w)-(?!\w)')
+    return compiled.sub(' ', str)
 
 #-------------------------------------------------Excel Outputting------------------------------------------------------
 
