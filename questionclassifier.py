@@ -27,34 +27,41 @@ def classifyQuestion(question):
                 pass
             else:
                 if questionTags[index + 1][1] == 'NN':
-                    if questionTags[index + 1][0] in ['year', 'month', 'day', 'age', 'century', 'time']:
+                    if questionTags[index + 1][0] in ['year', 'month', 'day', 'age', 'century', 'time', 'second',
+                                                      'minute']:
                         classified.add('TIME')
                         classified.add('DATE')
-                    if questionTags[index + 1][0] in ['city', 'street', 'town', 'country', 'state']:
+                    if questionTags[index + 1][0] in ['city', 'street', 'town', 'country', 'state', 'road', 'suburb',
+                                                      'area', 'place', 'location']:
                         classified.add('LOC')
                         classified.add('GPE')
-                    if questionTags[index + 1][0] in ['percentage']:
+                    if questionTags[index + 1][0] in ['percentage', 'number', 'value', 'amount', 'rank']:
                         classified.add('PERCENT')
                         classified.add('CARDINAL')
+                        classified.add('MONEY')
+                        classified.add('QUANTITY')
                     if questionTags[index + 1][0] in ['team', 'publication', 'organization', 'company',
-                                                      'government', 'university']:
+                                                      'government', 'university', 'party', 'kingdom', 'club']:
                         classified.add('ORG')
                 if questionTags[index + 1][1] in ['JJ', 'JJR', 'JJS']:
                     j = index + 1
                     while j < len(questionTags) and questionTags[j][1] != 'NN':
                         j += 1
                     if j < len(questionTags) and questionTags[j][1] != 'NN':
-                        if questionTags[j][0] in ['year', 'month', 'day', 'age', 'century', 'time']:
+                        if questionTags[j][0] in ['year', 'month', 'day', 'age', 'century', 'time', 'second', 'minute']:
                             classified.add('DATE')
                             classified.add('TIME')
-                        if questionTags[j][0] in ['city', 'street', 'town', 'country', 'state']:
+                        if questionTags[j][0] in ['city', 'street', 'town', 'country', 'state', 'road', 'suburb',
+                                                  'area', 'place', 'location']:
                             classified.add('LOC')
                             classified.add('GPE')
-                        if questionTags[j][0] in ['percentage']:
+                        if questionTags[j][0] in ['percentage', 'number', 'place', 'value', 'amount', 'rank']:
                             classified.add('PERCENT')
                             classified.add('CARDINAL')
+                            classified.add('MONEY')
+                            classified.add('QUANTITY')
                         if questionTags[j][0] in ['team', 'publication', 'organization', 'company', 'government',
-                                                  'university', 'newspaper']:
+                                                  'university', 'newspaper', 'party', 'kingdom', 'club']:
                             classified.add('ORG')
 
         if word == 'which':
@@ -63,14 +70,15 @@ def classifyQuestion(question):
                 pass
             else:
                 #Obvious cases for time and location and organizations
-                if questionTags[index + 1][0] in ['year', 'month', 'day', 'age', 'century', 'time']:
+                if questionTags[index + 1][0] in ['year', 'month', 'day', 'age', 'century', 'time', 'second', 'minute']:
                     classified.add('DATE')
                     classified.add('TIME')
-                if questionTags[index + 1][0] in ['city', 'street', 'town', 'country', 'state']:
+                if questionTags[index + 1][0] in ['city', 'street', 'town', 'country', 'state', 'road', 'suburb',
+                                                  'area', 'place', 'location']:
                     classified.add('LOC')
                     classified.add('GPE')
                 if questionTags[index + 1][0] in ['team', 'publication', 'organization', 'company', 'government',
-                                                  'university', 'newspaper']:
+                                                  'university', 'newspaper', 'party', 'kingdom', 'club']:
                     classified.add('ORG')
             #In the case where none match the obvious cases
             classified.add('WHICH')

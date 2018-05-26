@@ -103,7 +103,7 @@ def processLineWithStemmer(line):
 def processDoc(doc):
     processed = {}
     for i in range(0, len(doc)):
-        processed[i] = processLine(doc[i])
+        processed[i] = processLineWithStemmer(doc[i])
     return processed
 
 

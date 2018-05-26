@@ -58,7 +58,7 @@ def getVectors(doc, questions):
     #get query vectors
     queryVecs = {}
     for questionID, question in questions:
-        query = p.processLine(question)
+        query = p.processLineWithStemmer(question)
         queryVec = []
         for word in words:
             freq = termOccurence(word, query)
@@ -104,12 +104,11 @@ def getBestIndex(docVecs, queryVec):
 #----------------------------------------------------Linguistic Features------------------------------------------------
 
 
-nlp = spacy.load('en_core_web_sm')
+nlp = spacy.load('en_core_web_lg')
 
 #Takes a question and list of sentences
 #Compares the name entities of both to get a similarity value and stores it in a dictionary with similarity value as key
-#The sentence indexes are stored as values so we can find the sentences again, and are stored in a list. In case there
-#are sentences with the same similarity values
+#The sentence indexes are stored as values so we can find the sentences again
 def sentenceSim(question, sentences):
     simDict = {}
     questionEnt = nlp(question)
@@ -117,10 +116,7 @@ def sentenceSim(question, sentences):
         sentence = sentences[i]
         sentenceNLP = nlp(sentence)
         similarity = questionEnt.similarity(sentenceNLP)
-        if similarity in simDict.keys():
-            simDict[similarity].append(i)
-        else:
-            simDict[similarity] = [i]
+        simDict[similarity] = i
     return simDict
 
 
@@ -167,14 +163,15 @@ def QSNounPhraseSimilarity(question, sentence):
     #print (simList)
     #Create a list of all the closest noun phrases in sentence, only 1 index away
     npList = []
-    for simIndex in simList:
-        if simIndex < (sChunkLen - 1) and simIndex > 0:
-            npList.append(senChunks[simIndex-1])
-            npList.append(senChunks[simIndex+1])
-        elif simIndex == 0:
-            npList.append(senChunks[simIndex+1])
-        elif simIndex == (sChunkLen - 1):
-            npList.append(senChunks[simIndex-1])
+    if len(simList) != 0:
+        for simIndex in simList:
+            if ((simIndex < (sChunkLen - 1)) and (simIndex > 0)):
+                npList.append(senChunks[simIndex-1].text)
+                npList.append(senChunks[simIndex+1].text)
+            elif (simIndex == 0):
+                npList.append(senChunks[simIndex].text)
+            elif (simIndex == (sChunkLen - 1)):
+                npList.append(senChunks[simIndex-1].text)
     return npList
 
 #tok1 = 'underdeveloped countries'
@@ -201,7 +198,7 @@ sent = "Spielberg served as an uncredited executive producer on The Haunting, Th
 #bad2 = p.regexAscii(bad2)
 #print(bad)
 #print(bad2)
-test = "naively"
-print(p.processLineWithStemmer(sent))
+#test = "naively"
+#print(p.processLineWithStemmer(sent))
 #print(ques.replace("'",""))
 
