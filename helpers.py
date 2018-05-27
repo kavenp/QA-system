@@ -1,6 +1,7 @@
 import math
 import processing as p
 import spacy
+import random
 
 #------------------------------------------------TF-IDF------------------------------------------------------------------
 
@@ -130,7 +131,7 @@ def getSentenceNER(sentence):
 #POS tagger
 def getSentencePOS(sentence):
     sentenceNLP = nlp(sentence)
-    toks = [(token.text, token.pos_, token.tag_) for token in sentenceNLP]
+    toks = [(token.text, token.tag_) for token in sentenceNLP]
     return toks
 
 #NP chunker
@@ -148,7 +149,7 @@ def QSNounPhraseSimilarity(question, sentence):
     quesNLP = nlp(question)
     senNLP = nlp(sentence)
     #Boundary of similarity considered to be 'close enough'
-    simBound = 0.8
+    simBound = 0.85
     #list of similar NP indexes in sentence chunk list, initialized as set so there are no duplicate indexes stored
     simList = set()
     #Convert the generators to list of chunks
@@ -160,14 +161,22 @@ def QSNounPhraseSimilarity(question, sentence):
             if qNP.similarity(senChunks[i]) > simBound:
                 simList.add(i)
     simList = list(simList)
-    #print (simList)
+    #Shorten simlist to half to avoid too many entries
+    ran = random.randint(0,1)
+    simH = len(simList)/2
+    if ran:
+        simList = simList[int(simH):]
+    else:
+        simList = simList[:int(simH)]
     #Create a list of all the closest noun phrases in sentence, only 1 index away
     npList = []
     if len(simList) != 0:
         for simIndex in simList:
             if ((simIndex < (sChunkLen - 1)) and (simIndex > 0)):
-                npList.append(senChunks[simIndex-1].text)
-                npList.append(senChunks[simIndex+1].text)
+                if ran:
+                    npList.append(senChunks[simIndex-1].text)
+                else:
+                    npList.append(senChunks[simIndex+1].text)
             elif (simIndex == 0):
                 npList.append(senChunks[simIndex].text)
             elif (simIndex == (sChunkLen - 1)):

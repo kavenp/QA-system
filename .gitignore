@@ -105,3 +105,4 @@ venv.bak/
 .idea/
 __MACOSX/
 project_files/
+*.csv

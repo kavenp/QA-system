@@ -63,6 +63,9 @@ def getTraining():
 #set of stopwords
 stopwords = set(nltk.corpus.stopwords.words('english'))
 
+#list of punctuation
+puncts = set(string.punctuation)
+
 stemmer = nltk.stem.PorterStemmer()
 lemmatizer = nltk.stem.wordnet.WordNetLemmatizer()
 
@@ -77,11 +80,11 @@ def lemmatize(word):
 #Process a question
 def processLineWithLem(line):
     words = []
-    line = regexAscii(line)
+    #line = regexAscii(line)
     line = nltk.word_tokenize(line)
     for word in line:
         lemWord = lemmatize(word.lower())
-        if word not in stopwords:
+        if word not in stopwords and word not in puncts:
             words.append(lemWord)
     return words
 
@@ -89,12 +92,12 @@ def processLineWithLem(line):
 #Processes a single line i.e. Paragraph, sentence or question by stemming
 def processLineWithStemmer(line):
     words = []
-    line = regexAscii(line)
+    #line = regexAscii(line)
     line = nltk.word_tokenize(line)
     for word in line:
         #stemWord = stemmer.stem(lemmatize(word.lower()))
         stemWord = stemmer.stem(word.lower())
-        if word not in stopwords:
+        if word not in stopwords and word not in puncts:
             words.append(stemWord)
     return words
 

@@ -34,67 +34,98 @@ def main():
             simKeys = sorted(simKeys, reverse=True)
             #Take the top 3 keys
             simKeys = simKeys[:3]
+            #print(simDict)
             bestSentsIndexes = []
             bestSents = []
             #More than one sentence of the top similarity
             for i in range(0, len(simKeys)):
                 bestSentsIndexes.append(simDict[simKeys[i]])
             for bestI in bestSentsIndexes:
-                temp = p.regexAscii(sentences[bestI].lower())
-                bestSents.append(temp)
+                #temp = p.regexAscii(sentences[bestI].lower())
+                bestSents.append(sentences[bestI])
+            #print(bestSents)
             quesClass = qc.classifyQuestion(p.processLineWithLem(question))
-            answer = set()
-            #Question cases
-            if 'WHICH' in quesClass or 'WHY' in quesClass:
-                #print("WHICH")
-                answer.update(set(h.QSNounPhraseSimilarity(question, bestSent)))
-            else:
-                #print("NON-WHICH")
-                #Get the all matching entities that matches the question type
-                ents = h.getSentenceNER(bestSents[0])
-                for word, label in ents:
-                    if label in quesClass:
-                        answer.add(word)
 
-            #If answer is still empty after all the previous cases
-            #Then we start trying the other high ranked similarity sentences
+            if len(quesClass) > 0:
+                answer = set()
+                #Question cases
+                if 'WHY' in quesClass:
+                    #print("WHICH")
+                    for sent in bestSents:
+                        if len(answer) > 0:
+                            break
+                        else:
+                            tempQS = set(h.QSNounPhraseSimilarity(question, bestSents[0]))
+                            if len(tempQS) == 0:
+                                pass
+                            else:
+                                answer.update(tempQS)
+                else:
+                    #print("NON-WHICH")
+                    #Get the all matching entities that matches the question type
+                    for sent in bestSents:
+                        if len(answer) > 0:
+                            break
+                        else:
+                            ents = h.getSentenceNER(sent)
+                            for word, label in ents:
+                                if label in quesClass:
+                                    answer.add(word)
+            else:
+                answer = set()
+                #Use all entities in best sentence to try for an answer
+                ner = h.getSentenceNER(bestSents[0])
+                for word, label in ner:
+                    answer.add(word)
+            # Still empty? Use better than locality searcher
             if len(answer) == 0:
-                #print("FIRST EMPTY")
-                for sent in bestSents[1:]:
-                    #If we have enough answers after a 1-2 keys break out
-                    if len(answer) > 1:
+                for sent in bestSents:
+                    if len(answer) > 0:
                         break
                     else:
-                        ents = h.getSentenceNER(sent)
-                        for word, label in ents:
-                            if label in quesClass:
-                                answer.add(word)
-            #Still empty? Use better than random searcher
+                        tempQS = set(h.QSNounPhraseSimilarity(question, bestSents[0]))
+                        if len(tempQS) == 0:
+                            pass
+                        else:
+                            answer.update(tempQS)
+            # Ok, I give up, all random
+            ran = random.randint(0,1)
+            #Get random half of noun phrases from best sentence
             if len(answer) == 0:
-                #print("SECOND EMPTY")
-                for bestSent in bestSents:
-                    answer.update(set(h.QSNounPhraseSimilarity(question, bestSent)))
-                    #answerStr = " ".join(answer)
-            #Ok, I give up, random entity
-            if len(answer) == 0:
-                #print("THIRD EMPTY")
-                ner = h.getSentenceNER(bestSents[0])
-                if len(ner) != 0:
-                    nerText, tag = ner[(random.randint(0, len(ner)) - 1)]
-                    answer.add(nerText)
-            if len(answer) == 0:
-                #print("FOURTH EMPTY")
+                #print(bestSents)
                 nps = h.getSentenceNP(bestSents[0])
-                npsText = nps[(random.randint(0, len(nps)) - 1)]
-                answer.add(npsText)
+                npsH = len(nps)/2
+                if ran:
+                    temp = nps[int(npsH):]
+                else:
+                    temp = nps[:int(npsH)]
+                if len(temp) == 0:
+                    pass
+                else:
+                    answer.update(set(temp))
+            #If that still doesn't work take random half of nouns from best sentence
             if len(answer) == 0:
-                #print("FIFTH EMPTY")
-                toks = tokenize.word_tokenize(bestSents[0])
-                answer.add(toks[(random.randint(0, len(toks))-1)])
+                postagged = h.getSentencePOS(bestSents[0])
+                nouns = []
+                for noun, tag in postagged:
+                    if tag in ['NN', 'NNP', 'NNPS', 'NNS']:
+                        if noun not in nouns:
+                            nouns.append(noun)
+                nounH = len(nouns)/2
+                if ran:
+                    temp = nouns[nounH:]
+                else:
+                    temp = nouns[:nounH]
+                if len(temp) == 0:
+                    pass
+                else:
+                    answer.update(set(temp))
+
             answer = list(answer)
+            #print (answer)
             answerStr = " ".join(answer)
 
-            print(num)
+            print(questionID)
             num += 1
             #print (answer)
             print(answerStr)
